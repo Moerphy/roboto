@@ -1,0 +1,34 @@
+TOP_LOCAL_PATH:= $(call my-dir)
+include $(CLEAR_VARS)
+
+include $(TOP_LOCAL_PATH)/v8/Android.mk
+
+LOCAL_PATH := $(TOP_LOCAL_PATH)
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE    := roboto
+
+LOCAL_CFLAGS := -g
+
+LOCAL_SRC_FILES:= js/window.cpp \
+		js/console.cpp \
+    roboto.cpp \
+    roboto/runtime.cpp 
+
+
+LOCAL_C_INCLUDES := \
+		$(LOCAL_PATH)/roboto/. \
+    $(LOCAL_PATH)/. \
+    $(LOCAL_PATH)/v8/include/. \
+    $(LOCAL_PATH)/li
+    
+LOCAL_LDLIBS    := -lz -llog -landroid -lEGL -lGLESv1_CM
+
+LOCAL_STATIC_LIBRARIES := android_native_app_glue v8 
+
+APP_ABI := armeabi armeabi-v7a
+
+include $(BUILD_SHARED_LIBRARY) 
+
+$(call import-module,android/native_app_glue)
