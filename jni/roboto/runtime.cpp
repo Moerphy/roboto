@@ -1,5 +1,7 @@
 #include "runtime.h"
+#include "timer.h"
 
+// js headers
 #include "../js/window.h"
 
 
@@ -11,55 +13,26 @@
 
 
 
-
-// TODO: refactor event loop in own component
-
-/**
- * 
- */
-static int32_t globalInputHandler(struct android_app* app, AInputEvent* event){
-  LOGI("INPUT EVENT!");
-  
-  roboto::Runtime* runtime = (roboto::Runtime*)(app->userData);
-
-  if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION){
-    runtime->fireEvent( "touchmove", event );
-    return 1;
-  } else if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_KEY){
-    //LOGI("Received key event: %d", AKeyEvent_getKeyCode(event));
-    return 1;
-  }
-  return 0;
-}
-
-static void globalCmdHandler(struct android_app* app, int32_t cmd){
-  LOGI("CMD EVENT!");
-  switch (cmd) {
-    case APP_CMD_SAVE_STATE:
-      // the OS asked us to save the state of the app
-      break;
-    case APP_CMD_INIT_WINDOW:
-      // get the window ready for showing
-      break;
-    case APP_CMD_TERM_WINDOW:
-      // clean up the window because it is being hidden/closed
-      break;
-    case APP_CMD_LOST_FOCUS:
-      // if the app lost focus, avoid unnecessary processing (like monitoring the accelerometer)
-      break;
-    case APP_CMD_GAINED_FOCUS:
-      // bring back a certain functionality, like monitoring the accelerometer
-      break;
-  }
-}
-
-
 /**
  * 
  * The runtime itself
  * 
  */
 namespace roboto{
+  
+  void dummy10(void* d){ 
+    LOGI( "Wait dummy. Time: 10 " );
+  }
+  void dummy0(void* d){ 
+    LOGI( "Wait dummy. Time: 0 " );
+  }
+  void dummy1(void* d){ 
+    LOGI( "Wait dummy. Time: 1 " );
+  }
+  void dummy5(void* d){ 
+    LOGI( "Wait dummy. Time: 5" );
+  }
+  
   /**
    * Initialize the runtime. 
    * This includes initializing v8, creating Scope and Context for the JS executions.
@@ -70,15 +43,21 @@ namespace roboto{
     this->state = state;
     this->state->userData = this;
 
+    Timer::initialize(state);
+    LOGI("INIT TIMER!!!!!");
+    Timer::timed( 10 * 1000 * 1000, &dummy10, NULL );
+    Timer::timed( 1 * 1000 * 1000, &dummy1, NULL );
+    Timer::timed( 0 * 1000 * 1000, &dummy0, NULL );
+    Timer::timed( 5 * 1000 * 1000, &dummy5, NULL );
+    
+    //Event::initialize(state);
+    //Rendering::initialize();
+    
 
     v8::V8::Initialize();
-    // 
     v8::HandleScope handle_scope;
     // Create a context with the correct global object
-    v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
-    
-    js::Window::initialize(global);
-
+    v8::Handle<v8::ObjectTemplate> global = this->createGlobal(); 
     // create Persistent Handle for a context
     this->context = v8::Context::New(NULL, global);
   }
@@ -96,31 +75,27 @@ namespace roboto{
     }
   } 
   
+  v8::Handle<v8::ObjectTemplate> Runtime::createGlobal(){
+    v8::HandleScope scope;
+    
+    v8::Handle<v8::ObjectTemplate> global_template = v8::ObjectTemplate::New();
+    
+    ::roboto::js::Window::initialize( global_template );
+    
+    return scope.Close(global_template);
+  }
   
   /**
    * Starts the event loop. Runs in circles and dispatches events that have come in.
    */
   void Runtime::startEventLoop(){
-    this->state->onInputEvent = globalInputHandler;
-    this->state->onAppCmd = globalCmdHandler;
     
-    // dispatch native events
-    while(true){
-      int ident;
-      //int fdesc;
-      int events;
-      struct android_poll_source* source;
-      
-      
-      while( (ident = ALooper_pollAll(0, NULL, &events, (void**)&source)) >= 0 ) {
-        // process this event
-        if( source != NULL ){
-          source->process(this->state, source);
-        }
-      }
-    }
+    
+    
+    while(true) Timer::update();
+    //Event::update();
+    //Rendering::update();
   }
-  
   
   // public methods
   /**
@@ -147,6 +122,7 @@ namespace roboto{
    * Run a JS file from the assets folder.
    */
   void Runtime::run(const char* name){
+    LOGI(name);
     // Create a stack-allocated handle scope.
     v8::HandleScope handle_scope;
     // enter a context for compiling and executing JS
@@ -163,7 +139,7 @@ namespace roboto{
     // Run the script to get the result.
     v8::Handle<v8::Value> result = script->Run();
     
-    LOGI(name);
+    
     if( result.IsEmpty() ){
       // error?
       v8::Handle<v8::Value> exception = trycatch.Exception();

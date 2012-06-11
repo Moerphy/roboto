@@ -1,11 +1,4 @@
 #include <jni.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <string.h>
-#include <errno.h>
-#include <sys/cdefs.h>
-
 
 #include <android_native_app_glue.h>
 

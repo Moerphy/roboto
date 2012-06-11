@@ -1,9 +1,22 @@
-TOP_LOCAL_PATH:= $(call my-dir)
+LOCAL_PATH:= $(call my-dir)
+
+
+
 include $(CLEAR_VARS)
 
-include $(TOP_LOCAL_PATH)/v8/Android.mk
+LOCAL_MODULE            := v8_base
+LOCAL_SRC_FILES         := ./v8/libv8_base.a
 
-LOCAL_PATH := $(TOP_LOCAL_PATH)
+include $(PREBUILT_STATIC_LIBRARY)
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE            := v8_snap
+LOCAL_SRC_FILES         := ./v8/libv8_snapshot.a
+
+include $(PREBUILT_STATIC_LIBRARY)
+
+
 
 include $(CLEAR_VARS)
 
@@ -11,10 +24,12 @@ LOCAL_MODULE    := roboto
 
 LOCAL_CFLAGS := -g
 
-LOCAL_SRC_FILES:= js/window.cpp \
-		js/console.cpp \
-    roboto.cpp \
-    roboto/runtime.cpp 
+LOCAL_SRC_FILES:= js/console.cpp \
+	js/window.cpp \
+  roboto/event.cpp \
+  roboto/timer.cpp \
+  roboto/runtime.cpp \
+  roboto.cpp
 
 
 LOCAL_C_INCLUDES := \
@@ -25,10 +40,11 @@ LOCAL_C_INCLUDES := \
     
 LOCAL_LDLIBS    := -lz -llog -landroid -lEGL -lGLESv1_CM
 
-LOCAL_STATIC_LIBRARIES := android_native_app_glue v8 
+LOCAL_STATIC_LIBRARIES := android_native_app_glue v8_base v8_snap
 
 APP_ABI := armeabi armeabi-v7a
 
 include $(BUILD_SHARED_LIBRARY) 
 
 $(call import-module,android/native_app_glue)
+
