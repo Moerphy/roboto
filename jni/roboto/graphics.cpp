@@ -127,7 +127,7 @@ namespace roboto{
     if( this->initialized ){
       this->toRenderBuffer(true);
       // todo: can i lose this clear?
-      glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+      //glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
       // TODO: draw renderbuffer texture
       glUseProgram(this->colorProgram);
@@ -159,7 +159,6 @@ namespace roboto{
     if( this->initialized ){
       this->toRenderBuffer(false);
       
-      // TODO: draw renderbuffer texture
       glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
       glUseProgram(this->textureProgram);
 
@@ -317,6 +316,8 @@ namespace roboto{
     this->initialized = true;
     
     this->fillRect();
+    this->translate(0, 200);
+    this->fillRect();
     
     return true;
   }
@@ -373,6 +374,7 @@ namespace roboto{
     if (status != GL_FRAMEBUFFER_COMPLETE) {
       LOGE("setupRenderBuffer. Framebuffer not complete!");
     }
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     
   }  
   
