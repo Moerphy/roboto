@@ -16,39 +16,25 @@ namespace roboto{
   static const char vertexShader[] = 
     "uniform mat4 transform;"
     "attribute vec4 position;\n"
-    "attribute vec4 inputTextureCoordinate;\n"
+    "attribute vec2 inputTextureCoordinate;\n"
     "varying vec4 v_Color;\n"
     "varying vec2 textureCoordinate;\n"
     "void main() {\n"
     "    gl_Position =  transform * position;\n"
-    "    textureCoordinate = inputTextureCoordinate.xy;\n"
+    "    textureCoordinate = inputTextureCoordinate;\n"
     "}\n";
-  // ouput white for every fragment
+  // ouput white for every fragment // texture2D(u_Texture, textureCoordinate);
   static const char textureFragmentShader[] = 
       "varying highp vec2 textureCoordinate;\n"
       "uniform sampler2D u_Texture;\n"
       "void main() {\n"
-      "    gl_FragColor = texture2D(u_Texture, textureCoordinate);\n"
+      "    gl_FragColor = vec4( 1.0, 1.0, 1.0, 1.0 ) * texture2D(u_Texture, textureCoordinate);\n"
       "}\n";
   static const char colorFragmentShader[] = 
       "void main() {\n"
       "    gl_FragColor = vec4( 1.0, 1.0, 1.0, 1.0 );\n"
       "}\n";
-      
-  static const GLfloat squareVertices[] = {
-    -1.0f, -1.0f,
-    1.0f, -1.0f,
-    -1.0f,  1.0f,
-    1.0f,  1.0f,
-  };
 
-  static const GLfloat textureVertices[] = {
-    1.0f, 1.0f,
-    1.0f, 0.0f,
-    0.0f,  1.0f,
-    0.0f,  0.0f,
-  };
-  
   
   void callFrame(void* d){
     static float an = 0.1;
@@ -66,6 +52,7 @@ namespace roboto{
     this->app = app;
     this->changed = true;
     this->initialized = false;
+    this->framebuffer = 0;
 
     this->resetTransform();
 
@@ -102,22 +89,23 @@ namespace roboto{
     this->matrix.rotate(angle, 0, 0, 1);
   }
   
-  
-  
-  
-  
-  
+
   
   /*
    * Renderbuffer stuff
    */
   
   void Graphics::toRenderBuffer(bool back){
+    // TODO: do I need to finish manually?
+    // finish all operations before switching
+    glFlush();
+    glFinish();
     if( back ){
-      
+      glBindFramebuffer(GL_FRAMEBUFFER, this->framebuffer);
     }else{
-      
+      glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
+    glViewport(0, 0, this->width, this->height);
   }
   
   void Graphics::setDimension(int w, int h){
@@ -127,28 +115,19 @@ namespace roboto{
     this->resetTransform();  
   }
   
+    
+    
+  GLfloat gTriangleVertices[] = { 
+        400.0f, 400.0f,
+        10.0f, 10.0f,
+        790.0f, 10.0f 
+  };
   
   void Graphics::fillRect(){
     if( this->initialized ){
       this->toRenderBuffer(true);
-      
-      // todo: draw vertices
-    }
-  }
-  
-  
-    
-  GLfloat gTriangleVertices[] = { 
-        400.0f, 470.0f,
-        10.0f, 10.0f,
-        790.0f, 10.0f 
-  };
-    
-  void Graphics::frame(){
-    if( this->initialized ){
-      this->toRenderBuffer(false);
+      // todo: can i lose this clear?
       glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
 
       // TODO: draw renderbuffer texture
       glUseProgram(this->colorProgram);
@@ -170,9 +149,75 @@ namespace roboto{
       this->checkGlError("glUniformMatrix4fv(matrix)");
       
       glDrawArrays(GL_TRIANGLES, 0, 3);
+    }
+  }
+  
+  
+
+  
+  void Graphics::frame(){
+    if( this->initialized ){
+      this->toRenderBuffer(false);
+      
+      // TODO: draw renderbuffer texture
+      glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+      glUseProgram(this->textureProgram);
+
+      // fullscreen vertex
+      GLfloat vertices[] = {
+        -1,  1, //top left corner
+         1,  1, //top right corner
+        -1, -1, //bottom left corner
+         1, -1
+      }; // bottom right corner
+
+      GLushort indices[] = { 0, 1, 2, 3 }; //{ 0, 1, 2, 0, 2, 3 };
+ 
+      GLfloat textureVertices[] = {
+        0.0f,  1.0f, // top left
+        1.0f, 1.0f, // top right
+        0.0f,  0.0f, // bottom left
+        1.0f, 0.0f // top left
+      };
+
+
+      Matrix3D tr;
+      
+      // bind texture 
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, this->texture);
+     
+      //GLuint textureCoord = glGetAttribLocation(this->colorProgram, "inputTextureCoordinate"); 
+      //this->checkGlError("glGetAttribLocation(inputTexture)");
+      GLuint position = glGetAttribLocation(this->textureProgram, "position"); 
+      this->checkGlError("glGetAttribLocation(position)");
+      GLuint transform =  glGetUniformLocation(this->textureProgram, "transform"); 
+      this->checkGlError("glGetAttribLocation(transform)");
+      
+      GLuint textureh =  glGetUniformLocation(this->textureProgram, "u_Texture");
+      this->checkGlError("glGetAttribLocation(texture)");
+      GLuint texCoordsh = glGetAttribLocation(this->textureProgram, "inputTextureCoordinate"); 
+      this->checkGlError("glGetAttribLocation(inputTextureCoordinate)");
+      
+      
 
       
+      glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+      glEnableVertexAttribArray(position);
+      this->checkGlError("glEnableVertexAttribArray(position)");
+      glUniformMatrix4fv(transform, 1, false, tr.get());
+      this->checkGlError("glUniformMatrix4fv(matrix)");
+      glVertexAttribPointer(texCoordsh, 2, GL_FLOAT, GL_FALSE, 0, textureVertices);
+      glEnableVertexAttribArray(texCoordsh);
+      this->checkGlError("glVertexAttribPointer(texCoordsh)");
+
+      // Set the sampler texture unit to 0
+      glUniform1i(textureh, 0);
+     
+      glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, indices);
+      
       eglSwapBuffers(this->display, this->surface);
+      
       this->toRenderBuffer(true);
     }else{
       this->setupGraphics();
@@ -266,9 +311,71 @@ namespace roboto{
         LOGE("Could not create program.");
         return false;
     }
+    
+    this->setupRenderBuffer();
+    
     this->initialized = true;
+    
+    this->fillRect();
+    
     return true;
   }
+
+  void Graphics::setupRenderBuffer(){
+    if( this->framebuffer != 0 ){
+      // TODO: remove old framebuffer
+    }
+    
+    int w = this->width;
+    int h = this->height;
+    
+    glGenTextures(1, &(this->texture));
+    glBindTexture(GL_TEXTURE_2D, this->texture);
+    this->checkGlError("setupRenderBuffer.glBindTexture");
+    
+    // configure texture
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    //glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE); // automatic mipmap
+    this->checkGlError("setupRenderBuffer.glTexParameter");
+    // generate texture image
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 
+                 w, h, 0, GL_RGBA, 
+                 GL_UNSIGNED_BYTE, NULL);
+    this->checkGlError("setupRenderBuffer.glTexImage2d");
+    glGenerateMipmap(GL_TEXTURE_2D);
+    this->checkGlError("setupRenderBuffer.glGenerateMipmap");
+    glBindTexture(GL_TEXTURE_2D, 0);
+    
+    // create a renderbuffer object to store depth info TODO
+    /*
+    GLuint rboId;
+    glGenRenderbuffers(1, &rboId);
+    glBindRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, w, h);
+    */
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    
+    // create framebuffer object
+    glGenFramebuffers( 1, &(this->framebuffer) );
+    glBindFramebuffer( GL_FRAMEBUFFER, this->framebuffer );
+    
+    // attach the texture to framebuffer color attachment point
+    glFramebufferTexture2D( 
+          GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, 
+          GL_TEXTURE_2D, this->texture, 0 );
+          
+    // attach the renderbuffer to depth attachment point
+    //glFramebufferRenderbuffer( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboId );
+    
+    GLuint status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (status != GL_FRAMEBUFFER_COMPLETE) {
+      LOGE("setupRenderBuffer. Framebuffer not complete!");
+    }
+    
+  }  
+  
   
   void Graphics::createContext(android_app* app){
     // initialize OpenGL ES and EGL
@@ -324,8 +431,8 @@ namespace roboto{
     this->checkGlError("eglQuerySurface");
 
     // Initialize GL state.
-    //glEnable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
     
     glViewport(0, 0, w, h);
     

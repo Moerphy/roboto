@@ -17,6 +17,9 @@ namespace roboto{
       GLuint textureProgram;
       GLuint colorProgram;
       
+      GLuint framebuffer;
+      GLuint texture;
+      
       EGLDisplay display;
       EGLSurface surface;
       
@@ -36,6 +39,7 @@ namespace roboto{
       void  checkGlError(const char* op); 
       void createContext(android_app* app);
       bool   setupGraphics();
+      void setupRenderBuffer();
       void toRenderBuffer(bool);
       void resetTransform();
       
