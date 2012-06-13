@@ -1,7 +1,6 @@
 #include "timer.h"
 
-#include <android/log.h>
-#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "robotoJS", __VA_ARGS__))
+#include "log.h"
 
 namespace roboto{
   
@@ -20,18 +19,16 @@ namespace roboto{
     
     void Timer::update(){
       long time = getTime();
-      
       TimedCallback* cb = list;
-      while( cb != NULL && (time >= cb->target) ){
+      while( cb != NULL && (time >= list->target) ){
+        TimedCallback* cb = list;
+        list = list->next;
         
         void (*func)( void* ) = cb->callback;
         (*func)( cb->data );
-
-        TimedCallback* tmp = cb;
-        cb = cb->next;
-        delete tmp;
+        
+        delete cb;
       }
-      list = cb;
     }
     
     void Timer::addCallback( TimedCallback* cb ){
@@ -50,7 +47,6 @@ namespace roboto{
           list = cb;
         }
         cb->next = current;
-        
       }
     }
     

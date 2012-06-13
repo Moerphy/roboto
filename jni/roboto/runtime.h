@@ -1,6 +1,9 @@
 #ifndef ROBOTO_RUNTIME_H
 #define ROBOTO_RUNTIME_H
 
+#include "eventsource.h"
+#include "graphics.h"
+
 #include <android_native_app_glue.h>
 #include <v8.h>
 
@@ -12,6 +15,8 @@ namespace roboto{
       // properties
       bool started;
       struct android_app* state;
+      EventSource* eventHandler;
+      Graphics* graphics;
       v8::Persistent<v8::Context> context;
       
       // methods

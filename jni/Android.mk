@@ -26,8 +26,11 @@ LOCAL_CFLAGS := -g
 
 LOCAL_SRC_FILES:= js/console.cpp \
 	js/window.cpp \
-  roboto/event.cpp \
+	roboto/eventhandler.cpp \
+  roboto/eventsource.cpp \
   roboto/timer.cpp \
+  roboto/util/matrix.cpp \
+  roboto/graphics.cpp \
   roboto/runtime.cpp \
   roboto.cpp
 
@@ -38,7 +41,7 @@ LOCAL_C_INCLUDES := \
     $(LOCAL_PATH)/v8/include/. \
     $(LOCAL_PATH)/li
     
-LOCAL_LDLIBS    := -lz -llog -landroid -lEGL -lGLESv1_CM
+LOCAL_LDLIBS    := -lz -llog -landroid -lEGL  -lGLESv2
 
 LOCAL_STATIC_LIBRARIES := android_native_app_glue v8_base v8_snap
 

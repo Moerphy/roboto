@@ -1,37 +1,21 @@
+#include <stdlib.h>
+
 #include "runtime.h"
 #include "timer.h"
+#include "graphics.h"
+#include "log.h"
 
 // js headers
 #include "../js/window.h"
 
 
-#include <stdlib.h>
-#include <android/log.h>
-#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "robotoJS", __VA_ARGS__))
-#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "robotoJS", __VA_ARGS__))
-#define LOGE(...) ((void)__android_log_print(ANDROID_LOG_ERROR, "robotoJS", __VA_ARGS__))
-
-
 
 /**
  * 
- * The runtime itself
+ * The runtime itself. Pulls together V8, the DOM implementation and other stuff.
  * 
  */
 namespace roboto{
-  
-  void dummy10(void* d){ 
-    LOGI( "Wait dummy. Time: 10 " );
-  }
-  void dummy0(void* d){ 
-    LOGI( "Wait dummy. Time: 0 " );
-  }
-  void dummy1(void* d){ 
-    LOGI( "Wait dummy. Time: 1 " );
-  }
-  void dummy5(void* d){ 
-    LOGI( "Wait dummy. Time: 5" );
-  }
   
   /**
    * Initialize the runtime. 
@@ -42,18 +26,15 @@ namespace roboto{
     this->started = false;
     this->state = state;
     this->state->userData = this;
-
+    
+    // initialize core components
     Timer::initialize(state);
-    LOGI("INIT TIMER!!!!!");
-    Timer::timed( 10 * 1000 * 1000, &dummy10, NULL );
-    Timer::timed( 1 * 1000 * 1000, &dummy1, NULL );
-    Timer::timed( 0 * 1000 * 1000, &dummy0, NULL );
-    Timer::timed( 5 * 1000 * 1000, &dummy5, NULL );
+    this->eventHandler =  new EventSource(state, NULL);
+    this->graphics = new Graphics(state);
     
     //Event::initialize(state);
-    //Rendering::initialize();
     
-
+    // initialize V8
     v8::V8::Initialize();
     v8::HandleScope handle_scope;
     // Create a context with the correct global object
@@ -67,6 +48,8 @@ namespace roboto{
    */
   Runtime::~Runtime(){
     this->context.Dispose();
+    delete this->eventHandler;
+    delete this->graphics;
   }
   
   void Runtime::fireEvent(const char* type, AInputEvent* event){
@@ -92,7 +75,9 @@ namespace roboto{
     
     
     
-    while(true) Timer::update();
+    while(this->state->destroyRequested == 0){
+      Timer::update();
+    }
     //Event::update();
     //Rendering::update();
   }
