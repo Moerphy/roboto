@@ -24,16 +24,18 @@ LOCAL_MODULE    := roboto
 
 LOCAL_CFLAGS := -g
 
-LOCAL_SRC_FILES:= js/console.cpp \
-	js/window.cpp \
+LOCAL_SRC_FILES:=\
 	roboto/eventhandler.cpp \
   roboto/eventsource.cpp \
   roboto/timer.cpp \
   roboto/util/matrix.cpp \
   roboto/graphics.cpp \
+  js/console.cpp \
+	js/window.cpp \
   roboto/runtime.cpp \
   roboto.cpp
-
+#  roboto/util/asset.cpp \
+#  roboto/util/texture.cpp \
 
 LOCAL_C_INCLUDES := \
 		$(LOCAL_PATH)/roboto/. \

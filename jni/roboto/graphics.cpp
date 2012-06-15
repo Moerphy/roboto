@@ -38,14 +38,16 @@ namespace roboto{
   
   void callFrame(void* d){
     static float an = 0.1;
-    Graphics* g = (Graphics*)d;
-    g->frame();
-    //g->scale( 0.9999, 0.9999 );
-    //g->rotate( an * 3.141 / 180.0 );
-    //g->translate( 0, 0.01 );
-   // g->translate( 0.001, 0.001 );
-    // update every 10ms (100fps)
-    Timer::timed( 10000 ,callFrame, d );
+    if( d != NULL ){
+      Graphics* g = (Graphics*)d;
+      g->frame();
+      //g->scale( 0.9999, 0.9999 );
+      //g->rotate( an * 3.141 / 180.0 );
+      //g->translate( 0, 0.01 );
+     // g->translate( 0.001, 0.001 );
+      // update every 10ms (100fps)
+      Timer::timed( 10000 ,callFrame, d );
+    }
   }
 
   Graphics::Graphics(android_app* app){
@@ -53,6 +55,12 @@ namespace roboto{
     this->changed = true;
     this->initialized = false;
     this->framebuffer = 0;
+    
+    this->zIndex = 0;
+    
+    this->pathLength = 0;
+    this->maxPathLength = 16;
+    this->path = new float[this->maxPathLength*3];
 
     this->resetTransform();
 
@@ -60,7 +68,7 @@ namespace roboto{
   }
   
   Graphics::~Graphics(){
-    
+    delete[] this->path;
   }
   
   /*
@@ -152,7 +160,119 @@ namespace roboto{
     }
   }
   
+  /*
+  // START dummy functions
+  void Graphics::beginPath(){
+    this->pathLength = 0;
+  }
+
+
+  void Graphics::addToPath(float* point){ // add with current transformation matrix
+    this->addToPath( point[0], point[1] );
+  }
   
+  void Graphics::addToPath(float x, float y){ // add with current transformation matrix
+    // transform points
+    // add to path
+    if( this->pathLength >= this->maxPathLength ){
+      this->increasePathBuffer();
+    }
+    
+    this->path[this->pathLength*3 + 0] = x;
+    this->path[this->pathLength*3 + 1] = y;
+    this->path[this->pathLength*3 + 2] = this->zIndex;
+    
+    this->pathLength++;
+  }
+  
+  void Graphics::closePath(){
+    if( this->pathLength > 0 ){
+      float px = this->path[this->pathLength*3];
+      float py = this->path[this->pathLength*3 +1];
+      
+      if( px != this->path[0] || py != this->path[1] ){
+        // add first vertice to the end of this path
+        this->addToPath( this->path );
+      }
+    }
+  }
+  
+  void Graphics::increasePathBuffer(){
+    // TODO: create new buffer, copy old memory
+  }
+  
+  void Graphics::fillPath(){
+    
+  }
+  
+  void Graphics::strokePath(){
+    
+  }
+  
+  void Graphics::texturePath(){
+    
+  }
+  
+  void Graphics::drawImage(Image* i, float x, float y, float width, float height ){
+    this->toRenderBuffer(true);
+    
+    glUseProgram(this->textureProgram);
+
+    // fullscreen vertex
+    GLfloat vertices[] = {
+      x,  y, //top left corner
+      x + width,  y, //top right corner
+      x, y + height, //bottom left corner
+      x + width, y + height
+    }; // bottom right corner
+
+    GLushort indices[] = { 0, 1, 2, 3 }; //{ 0, 1, 2, 0, 2, 3 };
+ 
+    GLfloat textureVertices[] = {
+      0.0f,  1.0f, // top left
+      1.0f, 1.0f, // top right
+      0.0f,  0.0f, // bottom left
+      1.0f, 0.0f // top left
+    };
+    
+    // bind texture 
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, i->texture);
+   
+    //GLuint textureCoord = glGetAttribLocation(this->colorProgram, "inputTextureCoordinate"); 
+    //this->checkGlError("glGetAttribLocation(inputTexture)");
+    GLuint position = glGetAttribLocation(this->textureProgram, "position"); 
+    this->checkGlError("glGetAttribLocation(position)");
+    GLuint transform =  glGetUniformLocation(this->textureProgram, "transform"); 
+    this->checkGlError("glGetAttribLocation(transform)");
+    
+    GLuint textureh =  glGetUniformLocation(this->textureProgram, "u_Texture");
+    this->checkGlError("glGetAttribLocation(texture)");
+    GLuint texCoordsh = glGetAttribLocation(this->textureProgram, "inputTextureCoordinate"); 
+    this->checkGlError("glGetAttribLocation(inputTextureCoordinate)");
+    
+    
+
+    
+    glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+    glEnableVertexAttribArray(position);
+    this->checkGlError("glEnableVertexAttribArray(position)");
+    glUniformMatrix4fv(transform, 1, false, tr.get());
+    this->checkGlError("glUniformMatrix4fv(matrix)");
+    glVertexAttribPointer(texCoordsh, 2, GL_FLOAT, GL_FALSE, 0, textureVertices);
+    glEnableVertexAttribArray(texCoordsh);
+    this->checkGlError("glVertexAttribPointer(texCoordsh)");
+
+    // Set the sampler texture unit to 0
+    glUniform1i(textureh, 0);
+   
+    glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, indices);
+  }
+  
+  // END of dummy functions
+  */
+
+
 
   
   void Graphics::frame(){

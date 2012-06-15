@@ -72,14 +72,14 @@ namespace roboto{
    * Starts the event loop. Runs in circles and dispatches events that have come in.
    */
   void Runtime::startEventLoop(){
-    
+    v8::HandleScope handle_scope;
+    // enter a context for compiling and executing JS
+    v8::Context::Scope context_scope(this->context);
     
     
     while(this->state->destroyRequested == 0){
       Timer::update();
     }
-    //Event::update();
-    //Rendering::update();
   }
   
   // public methods

@@ -28,6 +28,12 @@ namespace roboto{
       
       Matrix3D matrix;
       
+      float* path;
+      int maxPathLength;
+      int pathLength;
+      
+      int zIndex;
+      
     public:
       android_app* app;
       bool initialized;
