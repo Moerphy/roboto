@@ -1,23 +1,18 @@
-LOCAL_PATH:= $(call my-dir)
-
-
+TOP_LOCAL_PATH:= $(call my-dir)
+LOCAL_PATH:= $(TOP_LOCAL_PATH)
 
 include $(CLEAR_VARS)
-
 LOCAL_MODULE            := v8_base
 LOCAL_SRC_FILES         := ./v8/libv8_base.a
-
 include $(PREBUILT_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-
 LOCAL_MODULE            := v8_snap
 LOCAL_SRC_FILES         := ./v8/libv8_snapshot.a
-
 include $(PREBUILT_STATIC_LIBRARY)
 
 
-
+LOCAL_PATH:= $(TOP_LOCAL_PATH)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE    := roboto
@@ -25,13 +20,18 @@ LOCAL_MODULE    := roboto
 LOCAL_CFLAGS := -g
 
 LOCAL_SRC_FILES:=\
+	js/window.cpp \
+	js/document.cpp \
+	js/console.cpp \
+	js/eventtarget.cpp \
+	js/event.cpp\
+	js/touchevent.cpp\
+	js/documentevent.cpp\
 	roboto/eventhandler.cpp \
   roboto/eventsource.cpp \
   roboto/timer.cpp \
   roboto/util/matrix.cpp \
   roboto/graphics.cpp \
-  js/console.cpp \
-	js/window.cpp \
   roboto/runtime.cpp \
   roboto.cpp
 #  roboto/util/asset.cpp \
@@ -41,7 +41,7 @@ LOCAL_C_INCLUDES := \
 		$(LOCAL_PATH)/roboto/. \
     $(LOCAL_PATH)/. \
     $(LOCAL_PATH)/v8/include/. \
-    $(LOCAL_PATH)/li
+    $(LOCAL_PATH)/js/.
     
 LOCAL_LDLIBS    := -lz -llog -landroid -lEGL  -lGLESv2
 

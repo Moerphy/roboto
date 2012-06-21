@@ -6,7 +6,7 @@
 #include "log.h"
 
 // js headers
-#include "../js/window.h"
+#include "window.h"
 
 
 
@@ -40,7 +40,9 @@ namespace roboto{
     // Create a context with the correct global object
     v8::Handle<v8::ObjectTemplate> global = this->createGlobal(); 
     // create Persistent Handle for a context
+    LOGI("Creating new v8 context");
     this->context = v8::Context::New(NULL, global);
+    LOGI("Done with new v8 context");
   }
   
   /**<
@@ -61,11 +63,9 @@ namespace roboto{
   v8::Handle<v8::ObjectTemplate> Runtime::createGlobal(){
     v8::HandleScope scope;
     
-    v8::Handle<v8::ObjectTemplate> global_template = v8::ObjectTemplate::New();
-    
-    ::roboto::js::Window::initialize( global_template );
-    
-    return scope.Close(global_template);
+    v8::Handle<v8::ObjectTemplate> window = ::roboto::js::Window::New();
+    LOGI("About to exit Runtime.createGlobal");
+    return scope.Close(window); 
   }
   
   /**

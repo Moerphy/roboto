@@ -15,7 +15,6 @@ namespace roboto{
   
   class Timer{
     private:
-      
       static void addCallback(TimedCallback*);
     
     public:

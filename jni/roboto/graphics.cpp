@@ -157,6 +157,7 @@ namespace roboto{
       this->checkGlError("glUniformMatrix4fv(matrix)");
       
       glDrawArrays(GL_TRIANGLES, 0, 3);
+      this->changed = true;
     }
   }
   
@@ -276,7 +277,7 @@ namespace roboto{
 
   
   void Graphics::frame(){
-    if( this->initialized ){
+    if( this->initialized && this->changed ){
       this->toRenderBuffer(false);
       
       glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -338,7 +339,8 @@ namespace roboto{
       eglSwapBuffers(this->display, this->surface);
       
       this->toRenderBuffer(true);
-    }else{
+      this->changed = false;
+    }else if( !this->initialized ) {
       this->setupGraphics();
     }
   }

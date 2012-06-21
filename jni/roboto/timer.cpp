@@ -3,6 +3,7 @@
 #include "log.h"
 
 namespace roboto{
+    int count = 0;
   
     struct TimedCallback{
       long target;
@@ -15,12 +16,14 @@ namespace roboto{
     TimedCallback* list;  
       
     void Timer::initialize(void* state){
+      count = 0;
     }
     
     void Timer::update(){
       long time = getTime();
       TimedCallback* cb = list;
-      while( cb != NULL && (time >= list->target) ){
+      int c = 0;
+      while( cb != NULL && (time >= list->target) && (c < count) ){
         TimedCallback* cb = list;
         list = list->next;
         
@@ -28,7 +31,9 @@ namespace roboto{
         (*func)( cb->data );
         
         delete cb;
+        c++;
       }
+      count -= c;
     }
     
     void Timer::addCallback( TimedCallback* cb ){
@@ -48,6 +53,7 @@ namespace roboto{
         }
         cb->next = current;
       }
+      count++;
     }
     
  
