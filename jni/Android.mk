@@ -17,7 +17,7 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE    := roboto
 
-LOCAL_CFLAGS := -g
+LOCAL_CFLAGS := -g -Os -Wall
 
 LOCAL_SRC_FILES:=\
 	js/window.cpp \
@@ -30,8 +30,10 @@ LOCAL_SRC_FILES:=\
 	roboto/eventhandler.cpp \
   roboto/eventsource.cpp \
   roboto/timer.cpp \
-  roboto/util/matrix.cpp \
-  roboto/graphics.cpp \
+  roboto/graphics/canvas.cpp \
+  roboto/graphics/systemcanvas.cpp \
+  roboto/graphics/texture.cpp \
+  roboto/graphics/matrix.cpp \
   roboto/runtime.cpp \
   roboto.cpp
 #  roboto/util/asset.cpp \

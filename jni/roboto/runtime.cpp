@@ -2,7 +2,9 @@
 
 #include "runtime.h"
 #include "timer.h"
-#include "graphics.h"
+#include "graphics/systemcanvas.h"
+#include "graphics/canvas.h"
+#include "graphics/texture.h"
 #include "log.h"
 
 // js headers
@@ -29,9 +31,9 @@ namespace roboto{
     
     // initialize core components
     Timer::initialize(state);
+    Texture::initialize(state);
     this->eventHandler =  new EventSource(state, NULL);
-    this->graphics = new Graphics(state);
-    
+
     //Event::initialize(state);
     
     // initialize V8
@@ -45,13 +47,17 @@ namespace roboto{
     LOGI("Done with new v8 context");
   }
   
+  void Runtime::onInitWindow(){
+    SystemCanvas* sc = SystemCanvas::getInstance();
+    sc->initialize(this->state->window);
+  }
+  
   /**<
    * Destructor disposes context object.
    */
   Runtime::~Runtime(){
     this->context.Dispose();
     delete this->eventHandler;
-    delete this->graphics;
   }
   
   void Runtime::fireEvent(const char* type, AInputEvent* event){

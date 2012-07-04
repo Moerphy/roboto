@@ -1,5 +1,7 @@
 #include "document.h"
 
+//#include "canvaselement.h"
+
 #include "helper.h"
 #include "../roboto/log.h"
 
@@ -117,8 +119,28 @@ partial interface Document {
 namespace roboto{
 namespace js {
 
-  Document::Document(v8::Handle<v8::Object>& that) : EventTarget(that), DocumentEvent(that) {
+  static v8::Handle<v8::Value> v8createElement( const v8::Arguments& arguments ){
+    v8::HandleScope scope;
+
+    v8::Handle<v8::Value> val = v8::Undefined();
+    //
+    if( true ){
+      //val = CanvasElement::getTemplate()->GetFunction()->NewInstance();
+    }else if( true ){
+      //val = ScriptElement::getTemplate()->GetFunction()->NewInstance();
+    }
     
+    return val;
+  }
+  
+  static v8::Handle<v8::Value> v8createElementNS( const v8::Arguments& arguments ){
+    return v8createElement(arguments);
+  }
+  
+  Document::Document(v8::Handle<v8::Object>& that) : EventTarget(that), DocumentEvent(that) {
+    V8_ADD_FUNCTION(that, createElement );
+    V8_ADD_FUNCTION(that, createElementNS );
+    //V8_ADD_FUNCTION(that, appendElement );
   }
 
 

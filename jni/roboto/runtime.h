@@ -2,7 +2,7 @@
 #define ROBOTO_RUNTIME_H
 
 #include "eventsource.h"
-#include "graphics.h"
+#include "graphics/systemcanvas.h"
 
 #include <android_native_app_glue.h>
 #include <v8.h>
@@ -16,7 +16,6 @@ namespace roboto{
       bool started;
       struct android_app* state;
       EventSource* eventHandler;
-      Graphics* graphics;
       v8::Persistent<v8::Context> context;
       
       // methods
@@ -42,6 +41,8 @@ namespace roboto{
       void run(const char* name);
       
       void fireEvent(const char* type, AInputEvent* event);
+      
+      void onInitWindow();
   };
 
 }

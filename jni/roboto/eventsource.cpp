@@ -1,6 +1,7 @@
 #include "eventsource.h"
 #include "eventhandler.h"
 #include "timer.h"
+#include "runtime.h"
 
 namespace roboto{
     
@@ -22,6 +23,7 @@ namespace roboto{
  * TODO: implement this stuff
  */
   static void globalCmdHandler(struct android_app* app, int32_t cmd){
+    Runtime* runt = static_cast<Runtime*>(app->userData);
     switch (cmd) {
       case APP_CMD_SAVE_STATE:
         // the OS asked us to save the state of the app
@@ -29,6 +31,7 @@ namespace roboto{
         break;
       case APP_CMD_INIT_WINDOW:
         // get the window ready for showing
+        runt->onInitWindow();
         break;
       case APP_CMD_TERM_WINDOW:
         // clean up the window because it is being hidden/closed

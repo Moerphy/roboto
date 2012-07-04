@@ -114,6 +114,14 @@ partial interface Document {
 
   // special event handler IDL attributes that only apply to Document objects
   [TreatNonCallableAsNull,LenientThis] attribute Function? onreadystatechange;
+
+
+  Element            createElement(in DOMString tagName)
+                                        raises(DOMException);
+  // Introduced in DOM Level 2:
+  Element            createElementNS(in DOMString namespaceURI, 
+                                     in DOMString qualifiedName)
+                                        raises(DOMException);
 };
  */
 
@@ -122,6 +130,8 @@ namespace js {
   class Document : public EventTarget, public DocumentEvent {
     public:
       Document(v8::Handle<v8::Object>&);
+      
+      
       
       static v8::Handle<v8::FunctionTemplate> getTemplate();
   };
