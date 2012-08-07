@@ -1,6 +1,7 @@
 #include "document.h"
 
-//#include "canvaselement.h"
+#include "canvaselement.h"
+#include "imageelement.h"
 
 #include "helper.h"
 #include "../roboto/log.h"
@@ -124,10 +125,15 @@ namespace js {
 
     v8::Handle<v8::Value> val = v8::Undefined();
     //
-    if( true ){
-      //val = CanvasElement::getTemplate()->GetFunction()->NewInstance();
-    }else if( true ){
-      //val = ScriptElement::getTemplate()->GetFunction()->NewInstance();
+    if( arguments.Length() > 0 && arguments[0].IsString() ){
+      v8::Handle<v8::String> elementType = arguments[0].ToString();
+      if( elementType.StrictEquals( v8::String::New("canvas") ) ){
+        val = CanvasElement::getTemplate()->GetFunction()->NewInstance();
+      }else if( elementType.StrictEquals( v8::String::New("script") ) ){
+        //val = ScriptElement::getTemplate(); // TODO
+      }else if( elementType.StrictEquals( v8::String::New("image") ) ){
+        val = ImageElement::getTemplate();
+      }
     }
     
     return val;
@@ -140,10 +146,9 @@ namespace js {
   Document::Document(v8::Handle<v8::Object>& that) : EventTarget(that), DocumentEvent(that) {
     V8_ADD_FUNCTION(that, createElement );
     V8_ADD_FUNCTION(that, createElementNS );
-    //V8_ADD_FUNCTION(that, appendElement );
+    //V8_ADD_FUNCTION(that, appendElement ); // TODO
   }
 
 
   V8_CREATE_CLASS(Document)
-  
 }}

@@ -142,9 +142,9 @@ namespace js{
   bool EventTarget::dispatchEvent(Event* event, v8::Handle<v8::Value> ev){
     EventItem* handler = this->eventList;
     
-    while( handler != NULL ){
+    while( handler != NULL && event != NULL ){
       // strcmp == 0 -> equal
-      if( strcmp (handler->type, event->type) == 0 ){
+      if( handler->type != NULL && event->type != NULL && strcmp (handler->type, event->type) == 0 ){
         // TODO: Event arguments
         handler->listener->Call( v8::Context::GetCurrent()->Global(), 1, &ev );
         

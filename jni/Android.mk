@@ -27,6 +27,7 @@ LOCAL_SRC_FILES:=\
 	js/event.cpp\
 	js/touchevent.cpp\
 	js/documentevent.cpp\
+	js/imageelement.cpp\
 	roboto/eventhandler.cpp \
   roboto/eventsource.cpp \
   roboto/timer.cpp \

@@ -98,11 +98,13 @@ namespace roboto{
     
     this->bufferReady = true;
     
+    LOGI("Canvas.textureId: %i", this->renderTexture );
+    
     return true;
   }
 
   void Canvas::toRenderBuffer(bool toBuffer){
-    // TODO: do I need to finish all operations manually here?
+    // TODO: do I need to finish all operations manually here? Probably not
     //glFlush();
     //glFinish();
     if( toBuffer ){
@@ -114,11 +116,14 @@ namespace roboto{
     }else{
       glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-    //glViewport(0, 0, this->width, this->height);
   }
   
   bool Canvas::hasChanged(){
-    return this->changed; // TODO
+    return this->changed;
+  }
+  
+  void Canvas::setChanged(bool c){
+    this->changed = c;
   }
 
   // standard methods of the HTML canvas
@@ -126,9 +131,46 @@ namespace roboto{
   void Canvas::drawImage(Texture* i, float dx, float dy ){
     this->drawImage(i, 0, 0, i->width, i->height, dx, dy, i->width, i->height );
   }
+  
+  /*
+  void Canvas::drawImageFrame(float dx, float dy, float dw, float dh){
+    this->toRenderBuffer(true);
+    GLfloat vertices[] = {
+      dx,     dy+dh, //top left corner
+      dx+dw,  dy+dh, //top right corner
+      dx,     dy, //bottom left corner
+      dx+dw,  dy
+    }; // bottom right corner
+    
+    glUseProgram(Canvas::colorProgram);
+    this->checkGlError("[fillRect] glUseProgram");
+  
+    //GLuint textureCoord = glGetAttribLocation(this->colorProgram, "inputTextureCoordinate"); 
+    //this->checkGlError("glGetAttribLocation(inputTexture)");
+    GLuint position = glGetAttribLocation(Canvas::colorProgram, "position"); 
+    this->checkGlError("glGetAttribLocation(position)");
+    GLuint transform =  glGetUniformLocation(Canvas::colorProgram, "transform"); 
+    this->checkGlError("glGetAttribLocation(transform)");
+
+    glLineWidth(5);
+    glVertexAttribPointer(position, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+    glEnableVertexAttribArray(position);
+    this->checkGlError("glEnableVertexAttribArray(position)");
+    glUniformMatrix4fv(transform, 1, false, this->transform.get());
+    this->checkGlError("glUniformMatrix4fv(matrix)");
+    
+    glDrawArrays(GL_LINES, 0, 4);
+    
+    glDisableVertexAttribArray(position);
+    this->changed = true;
+    LOGI("Called drawImageFrame()");
+  }
+  */
+  
   // drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight)
   void Canvas::drawImage(Texture* tex, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh ){
     this->toRenderBuffer(true);
+    //this->drawImageFrame(dx, dy, dw, dh);
     glUseProgram(Canvas::textureProgram);
     this->checkGlError("glUseProgram(textureProgram)");
     // fullscreen vertex
@@ -139,14 +181,16 @@ namespace roboto{
       dx+dw,  dy
     }; // bottom right corner
 
-    GLushort indices[] = { 0, 1, 2, 3 }; //{ 0, 1, 2, 0, 2, 3 };
-
+    GLushort indices[] = { 0, 1, 2, 3 }; 
+    // TODO: plug sx, sy, sw and sh in here
     GLfloat textureVertices[] = {
       0.0f,  1.0f, // top left
       1.0f, 1.0f, // top right
       0.0f,  0.0f, // bottom left
       1.0f, 0.0f // top left
     };
+    
+    LOGI("Canvas.drawImage. id: %i, from: (%f, %f) to (%f, %f)", tex->id, dx, dy+dh, dx+dw, dy);
     
     // bind texture 
     glActiveTexture(GL_TEXTURE0);
@@ -175,8 +219,14 @@ namespace roboto{
 
     // Set the sampler texture unit to 0
     glUniform1i(textureh, 0);
+    
+    // enable blending
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
    
     glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, indices);
+    
+    this->changed = true;
     
   }
   

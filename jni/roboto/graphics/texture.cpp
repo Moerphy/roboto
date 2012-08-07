@@ -33,13 +33,30 @@ namespace roboto{
     }
   }
   
+  void checkGlError(const char* op) {
+    for (GLint error = glGetError(); error; error = glGetError()) {
+        LOGI("after %s() glError (0x%x)\n", op, error);
+    }
+  }
+  
   Texture* Texture::load(const char* filename){
     // TODO
     // generate texture
     Texture* t = new Texture();
     GLuint textureId;
     glGenTextures(1, &textureId);
+    checkGlError("glGenTextures");
     glBindTexture(GL_TEXTURE_2D, textureId);
+    checkGlError("glBindTexture");
+    
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    checkGlError("glTexParameter1");
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    checkGlError("glTexParameter2");
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    checkGlError("glTexParameter3");
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    checkGlError("glTexParameter4");
     
     // call java code
     JNIEnv *jni; 
@@ -48,12 +65,12 @@ namespace roboto{
     jstring filenameString = jni->NewStringUTF(filename);
     jint textureIdJava = textureId;
     
-    LOGI("Calling texture.load");
-    
     //jclass textureLoaderClass = jni->FindClass("org/metafnord/roboto/TextureLoader");
     jmethodID loadMethod = jni->GetStaticMethodID(textureLoaderClass, "loadTexture", "(ILjava/lang/String;)[I"); // "(ILjava/lang/String;)[I"
     jintArray dimensions = (jintArray)
           jni->CallStaticObjectMethod( textureLoaderClass, loadMethod , textureIdJava, filenameString );
+    
+    checkGlError("TextureLoader");
     
     jint buf[2];
     jni->GetIntArrayRegion(dimensions, 0, 2, buf);

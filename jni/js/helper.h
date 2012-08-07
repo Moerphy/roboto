@@ -34,4 +34,10 @@
 
 #define V8_ADD_FUNCTION(obj, name) obj->Set( v8::String::New(#name), v8::FunctionTemplate::New( v8##name )->GetFunction() );
 
+#define V8_ADD_ACCESSOR(obj, name) obj->SetAccessor(v8::String::New(#name), v8get##name, v8set##name);
+
+#define V8_UNWRAP_INTERNAL(obj, type, name) v8::Local<v8::External> v8_wrap = v8::Local<v8::External>::Cast(obj->GetInternalField(0)); \
+    void* v8_ptr = v8_wrap->Value();\
+    type* name = static_cast<type*>(v8_ptr);
+
 #endif

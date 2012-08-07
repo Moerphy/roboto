@@ -65,6 +65,7 @@ namespace roboto{
       virtual void resetTransform();
       void clear();
       bool hasChanged();
+      void setChanged(bool);
       void setDimension(int, int);
       Texture& getTexture();
       

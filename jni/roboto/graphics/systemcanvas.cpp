@@ -78,9 +78,23 @@ namespace roboto{
     
     Canvas* bc = this->createCanvas();
     this->addCanvas(bc);
-    //bc->scale(0.5, 0.5);
-    //bc->translate( 100, 100 );
+    Canvas* bc2 = this->createCanvas();
+    this->addCanvas(bc2);
+    bc->scale(5, 5);
+    bc2->scale(5, 5);
+    //bc->scale( 10, 10 );
+    Texture* t = Texture::load("img/sprite.png");
+    bc->drawImage(t, 0, 0);
+    bc2->drawImage(t, 32, 32);
+    
+    t->dispose();
+    delete t;
+    /*
+    bc->translate( 100, 100 );
     bc->fillRect();
+    bc->translate( 100, 100);
+    bc->fillRect();
+    //*/
   }
 
 
@@ -113,11 +127,12 @@ namespace roboto{
     CanvasItem* list = this->canvasList;
     while( list != NULL ){
       Texture t = list->canvas->getTexture();
+      list->canvas->setChanged(false);
       this->drawImage(&t, 0, 0); // TODO
       list = list->next;
       texCount++;
     }
- 
+    LOGI("SystemCanvas.drawFrame. %i", texCount);
     // swap buffers
     eglSwapBuffers(this->display, this->surface);
     // clear back buffer for next frame
@@ -331,7 +346,7 @@ namespace roboto{
     this->canvasList = li;
   }
 
-    void SystemCanvas::removeCanvas(Canvas* c){} // TODO
+  void SystemCanvas::removeCanvas(Canvas* c){} // TODO
   
   // singleton method
   SystemCanvas* SystemCanvas::getInstance(){
